@@ -28,50 +28,96 @@ void OnDeinit(const int reason)
 //+------------------------------------------------------------------+
 //| Expert tick function                                             |
 //+------------------------------------------------------------------+
+//EXTERNABLES
+extern int StartHour;
+extern int EndHour;
+extern int OrderCheck;
+
 void OnTick()
   {
 //---
 //if the current time is between 9 gmt and 22 gmt
- //check if there is an order ///Extern variable
+if(Hour() >= StartHour && Hour() <= EndHour)
+{
+ bool CurrentBuyOrder;
+ bool CurrentSellOrder;
+ 
+ //check if there is an order ///Extern variable //TODO
 
-   //call fractal indicator
+   //Fractal Indicator
+    double Fractal = iCustom(NULL,NULL,"Fractals",0,0); //TODO setup Indicator
+       
+   //Check if Fractal Trend has been Broken
+   int  UpCounter = 0;           int  DownCounter = 0;
+   bool UpFractalBroken = false; bool DownFractalBroken = false;
    
-   //check if fractal pattern has been broken
-      //if pattern broken flag equal
-         //check if up or down pattern was broken
-            //if up upflag equals true
-            //if down down flag equals true
+   //TODO calculate if fractal is up or down
+   //TODO Make into a Function fractal checker
+
+   //Down Fractal Trend Broken Checker
+   if(Fractal == up)
+   {
+   UpCounter++;
+   if(DownCounter >=1 && UpCounter == 1){DownFractalBroken = true;}
+   }
+   
+   //Up Fractal Trend Broken Checker
+   if(Fractal == down)
+   {
+   DownCounter++;
+   if(UpCounter >=1 && DownCounter == 1){UpFractalBroken = true;}
+   }  
       
-      //else flag equals false
-   //check if there is an order ///Extern variable
+   //check if there is an order ///Extern variable //TODO //Maybe????
    //if no order
-      //check if fractal up flag equals true
-      // call SMA
-      //if price above 60 sma
-         //call 5 ema low
-         //if price => ema low
-            //submit buy order
-            //buyflag = tzrue
+   
+      //If the Up Fractal Trend has broken then Send a Buy Order
+      if(UpFractalBroken == True)
+      {     
+         //Call SMA
+         double SMMA = iMA(NULL,NULL,60,0,2,0,0); //TODO Change to Kirell SMMA
+         if(Bid > SMMA)
+         {
+            double EMALow = iMA(NULL,NULL,5,0,1,3,0);
+            if(Bid >= EMALow){OrderSend();}//TODO Buy Order Send
+         }
+      }
+      
+      //If the Down Fractal Trend has broken then Send a Sell Order
+      if(DownFractalBroken == True)
+      {     
+         //Call SMMA
+         double SMMA = iMA(NULL,NULL,60,0,2,0,0); //TODO Change to Kirell SMMA
+         if(Bid > SMMA)
+         {
+            double EMAHigh = iMA(NULL,NULL,5,0,1,2,0);
+            if(Bid >= EMAHigh){OrderSend();}//TODO Sell Order Send
+         }
+      }
+      
+      //Buy Order Exit Stratergey
+      if(CurrentBuyOrder == true)
+      {
+         double EMAHigh = iMA(NULL,NULL,5,0,1,2,0);
+         if(Bid >= EMAHigh)
+         {
+            bool OrderExit = OrderClose();//TODO Finish Order Close
+            if(!OrderExit){Alert("Buy Order Not Closed");}
+         }
+      }
+      
+      //Sell Order Exit Stratergey
+      if(CurrentSellOrder == true)
+      {
+         double EMALow = iMA(NULL,NULL,5,0,1,3,0);
+         if(Bid >= EMALow)
+         {
+            bool OrderExit = OrderClose();//TODO Finish Order Close
+            if(!OrderExit){Alert("Buy Order Not Closed");}
+         }
+      }
             
-      //check if fractal down flag equals true
-      // call SMA
-      //if price below 60 sma
-         //call 5 ema high
-         //if price => ema high
-            //submit sell order
-            //buyflag = sell
-            
-            //if buyflag equals true
-               //call 5 ema high
-               //if price touches 5 ema high
-               //close trade
-               //buy flag equals false
-               
-            //if sellflag equals true
-               //call 5 ema low
-               //if price touches 5 ema low
-               //close trade
-               //sell flag equals false
+     
   }
   }
 //+------------------------------------------------------------------+
